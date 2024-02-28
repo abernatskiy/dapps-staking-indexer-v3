@@ -29,11 +29,13 @@ import { handleSubperiod } from "./mapping/subperiod";
 import { handleRewards } from "./mapping/rewards";
 import { handleStakersCountAggregated } from "./mapping/stakersCount";
 
+import { stats } from './mapping/tvl'
+
 // supportHotBlocks: true is actually the default, adding it so that it's obvious how to disable it
 processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
   const entities = new Entities();
   await handleEvents(ctx, entities);
-
+/*
   const bnsGroupedStakingEvents = await getGroupedStakingEvents(
     UserTransactionType.BondAndStake,
     entities.stakingEvent,
@@ -72,25 +74,31 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
   await ctx.store.insert(entities.stakingEvent);
   await ctx.store.insert(entities.DappsToInsert);
   await ctx.store.upsert(entities.DappsToUpdate);
-  await ctx.store.insert(entities.TvlToInsert);
-  await ctx.store.upsert(entities.TvlToUpdate);
   await ctx.store.upsert(entities.StakersToUpsert);
   await ctx.store.insert(entities.StakersCountToInsert);
   await ctx.store.upsert(entities.StakersCountToUpdate);
   await ctx.store.upsert(entities.StakersCountAggregatedDailyToUpsert);
   await ctx.store.insert(entities.UniqueStakerAddressToInsert);
-  await ctx.store.upsert(entities.UniqueLockerAddressToUpsert);
   await ctx.store.insert(entities.StakesToInsert);
   await ctx.store.upsert(entities.StakesToUpdate);
   await ctx.store.insert(entities.SubperiodsToInsert);
+*/
+  await ctx.store.insert(entities.TvlToInsert);
+  await ctx.store.upsert(entities.TvlToUpdate);
+  await ctx.store.upsert(entities.UniqueLockerAddressToUpsert);
+
+  const height = ctx.blocks[ctx.blocks.length-1].header.height
+  ctx.log.info(`At height ${height} the stats are`)
+  ctx.log.info(stats)
 });
 
 async function handleEvents(ctx: ProcessorContext<Store>, entities: Entities) {
   for (let block of ctx.blocks) {
     for (let event of block.events) {
       let decoded;
-      ctx.log.info(`Processing event: ${event.name}`);
+//      ctx.log.info(`Processing event: ${event.name}`);
       switch (event.name) {
+/*
         case events.dappsStaking.bondAndStake.name:
           if (events.dappsStaking.bondAndStake.v4.is(event)) {
             let [account, contract, amount] =
@@ -267,12 +275,14 @@ async function handleEvents(ctx: ProcessorContext<Store>, entities: Entities) {
           beneficiaryChangedDapp &&
             entities.DappsToUpdate.push(beneficiaryChangedDapp);
           break;
+*/
         case events.dappStaking.locked.name:
         case events.dappStaking.unlocking.name:
         // case events.dappStaking.claimedUnlocked.name:
         case events.dappStaking.relock.name:
           await handleTvl(ctx, event, entities);
           break;
+/*
         case events.dappStaking.stake.name:
         case events.dappStaking.unstake.name:
         case events.dappStaking.unstakeFromUnregistered.name:
@@ -296,15 +306,17 @@ async function handleEvents(ctx: ProcessorContext<Store>, entities: Entities) {
         case events.dappStaking.dAppReward.name:
           await handleRewards(event, entities, ctx);
           break;
+*/
         default:
-          ctx.log.warn(`Unhandled event: ${event.name}`);
+//          ctx.log.warn(`Unhandled event: ${event.name}`);
           continue;
       }
     }
   }
-  await handleStakersCountAggregated(ctx, entities, ctx.blocks[0].header);
+//  await handleStakersCountAggregated(ctx, entities, ctx.blocks[0].header);
 }
 
+/*
 async function getGroupedStakingEvents(
   txType: UserTransactionType,
   stakingEvents: StakingEvent[],
@@ -366,3 +378,4 @@ async function getGroupedStakingEvents(
   }
   return out;
 }
+*/

@@ -11,7 +11,8 @@ import { assertNotNull } from "@subsquid/util-internal";
 import { lookupArchive } from "@subsquid/archive-registry";
 import { events } from "./types";
 
-const blockRange = { from: parseInt(process.env.BLOCK_RANGE!, 10) };
+//const blockRange = { from: parseInt(process.env.BLOCK_RANGE!, 10) };
+const blockRange = { from: 5876078, to: 6010000 }
 console.log(`Block Range: ${blockRange.from}`);
 const archive =
   process.env.ARCHIVE != ""
@@ -21,7 +22,8 @@ const archive =
       })
     : undefined;
 console.log(`Archive: ${archive}`);
-const chain = process.env.RPC_ENDPOINT; // process.env.RPC_ASTAR_SUBSTRATE_HTTP || process.env.RPC_ENDPOINT;
+//const chain = process.env.RPC_ENDPOINT; // process.env.RPC_ASTAR_SUBSTRATE_HTTP || process.env.RPC_ENDPOINT;
+const chain = process.env.RPC_SHIDEN_SUBSTRATE_HTTP;
 console.log(`Chain URL: ${chain}`);
 
 export const processor = new SubstrateBatchProcessor()

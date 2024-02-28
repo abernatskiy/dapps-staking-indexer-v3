@@ -9,6 +9,13 @@ import {
 } from "../utils";
 import { TvlAggregatedDaily, Subperiod, UniqueLockerAddress } from "../model";
 
+export const stats = {
+	unlocking: 0,
+	locked: 0,
+	relock: 0,
+	tvl: 0n
+}
+
 export async function handleTvl(
   ctx: ProcessorContext<Store>,
   event: Event,
@@ -25,6 +32,23 @@ export async function handleTvl(
     lockAmount = amount;
     await upsertUniqueLockerAddress(lockAmount, address, ctx, entities);
   }
+
+	switch (event.name) {
+		case events.dappStaking.unlocking.name:
+			stats.unlocking += 1
+			break
+		case events.dappStaking.locked.name:
+			stats.locked += 1
+			break
+		case events.dappStaking.relock.name:
+			stats.relock += 1
+			break
+		default:
+			ctx.log.info(`Non-tvl-related event detected at handleTvl`)
+			break
+	}
+	stats.tvl += lockAmount
+
 
   const day = getFirstTimestampOfTheDay(event.block.timestamp ?? 0);
   const totalLockers: number = await ctx.store.count(UniqueLockerAddress);
